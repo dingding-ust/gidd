@@ -14,6 +14,8 @@ source ~/.bashrc
 module load cuda/11.2
 conda activate gidd_env
 
-# 2. 运行命令: p_u=0.0
-cd ..
+# 2. 确保切换到项目根目录
+cd /home/ddingab/gidd  # 直接跳到项目根目录（确保绝对路径无误）
+
+# 3. 运行命令: p_u=0.0
 torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd logging.run_name="'small-gidd+-owt-pu=0.0'"
