@@ -4,9 +4,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import tqdm.auto as tqdm
+import pkg_resources
 
 from gidd.diffusion_process import NoiseSchedule
 from gidd.utils import sample_categorical
+
+# 检查PyTorch版本
+torch_version = pkg_resources.get_distribution("torch").version
+is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
+has_compiler = hasattr(torch, 'compiler')
 
 
 class Sampler(nn.Module):
@@ -73,7 +79,7 @@ class GiddSampler(Sampler):
     def __init__(self, model, tokenizer, noise_schedule: NoiseSchedule, t_eps=1e-4, compile_step=True, min_p=0.0):
         super().__init__(model, tokenizer, noise_schedule, t_eps=t_eps)
         self.sampling_step = self.DenoisingStep(model, noise_schedule, tokenizer, min_p=min_p)
-        if compile_step:
+        if compile_step and has_compiler:
             self.sampling_step = torch.compile(self.sampling_step)
 
     def _do_generate(self, num_samples, num_denoising_steps, max_length, show_progress=False, device=None):
@@ -134,7 +140,7 @@ class MDLMSampler(Sampler):
     def __init__(self, model, tokenizer, noise_schedule: NoiseSchedule, t_eps=1e-4, compile_step=True, min_p=0.0):
         super().__init__(model, tokenizer, noise_schedule, t_eps=t_eps)
         self.sampling_step = self.DenoisingStep(model, noise_schedule, tokenizer.mask_token_id, min_p=min_p)
-        if compile_step:
+        if compile_step and has_compiler:
             self.sampling_step = torch.compile(self.sampling_step)
 
     def _do_generate(self, num_samples, num_denoising_steps, max_length, show_progress=False, device=None):
@@ -151,7 +157,7 @@ class MDLMSampler(Sampler):
 class AutoregressiveSampler(Sampler):
     def __init__(self, model, tokenizer, noise_schedule: NoiseSchedule, compile_step=True):
         super().__init__(model, tokenizer, noise_schedule)
-        if compile_step:
+        if compile_step and has_compiler:
             self.model = torch.compile(model)
 
     def _do_generate(self, num_samples, num_denoising_steps, max_length, show_progress=False, device=None):
@@ -177,6 +183,10 @@ class AutoregressiveSampler(Sampler):
 
 
 def get_sampler(config, model, tokenizer, noise_schedule: NoiseSchedule, compile_step=True, min_p=0.0):
+    # 如果PyTorch版本低于2.0，禁用编译功能
+    if not has_compiler:
+        compile_step = False
+        
     if config.model.type == "diffusion":
         if config.model.diffusion_process == "gidd":
             return GiddSampler(model, tokenizer, noise_schedule, t_eps=config.model.t_eps, compile_step=compile_step, min_p=min_p)

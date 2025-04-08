@@ -2,11 +2,16 @@ import torch
 import torch.nn as nn
 import tqdm.auto as tqdm
 from transformers import AutoModelForMaskedLM, AutoTokenizer
+import pkg_resources
 
 from gidd.diffusion_process import HybridDiffusion
 from gidd.sampling import GiddSampler
 from gidd.utils import sample_categorical
 
+# 检查PyTorch版本
+torch_version = pkg_resources.get_distribution("torch").version
+is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
+has_compiler = hasattr(torch, 'compiler')
 
 class GiddPipeline(nn.Module):
     @classmethod
@@ -25,9 +30,12 @@ class GiddPipeline(nn.Module):
         self.tokenizer = tokenizer
         self.config = config
 
+        # 只有在PyTorch 2.0+且compile_step=True时才启用编译
+        if not has_compiler:
+            compile_step = False
         self.sampler = GiddSampler(model, tokenizer, noise_schedule, t_eps=config.t_eps, compile_step=compile_step)
 
-    # @torch.compiler.disable
+    @torch.compiler.disable
     def progress_bar(self, iterable=None, total=None):
         if not hasattr(self, "_progress_bar_config"):
             self._progress_bar_config = {}
