@@ -299,7 +299,9 @@ class DDiTBlock(nn.Module):
       x = rearrange(x, '(b s) h d -> b s (h d)', b=batch_size)
     else:
       q, k, v = qkv[:, :, 0].transpose(1, 2), qkv[:, :, 1].transpose(1, 2), qkv[:, :, 2].transpose(1, 2)
-      x = F.scaled_dot_product_attention(q, k, v)
+      attn_weights = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.head_dim)
+      attn_weights = F.softmax(attn_weights, dim=-1)
+      x = torch.matmul(attn_weights, v)
       
       x = rearrange(x, 'b h s d -> b s (h d)', b=batch_size)
 
