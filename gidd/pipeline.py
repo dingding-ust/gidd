@@ -27,7 +27,7 @@ class GiddPipeline(nn.Module):
 
         self.sampler = GiddSampler(model, tokenizer, noise_schedule, t_eps=config.t_eps, compile_step=compile_step)
 
-    @torch.compiler.disable
+    # @torch.compiler.disable
     def progress_bar(self, iterable=None, total=None):
         if not hasattr(self, "_progress_bar_config"):
             self._progress_bar_config = {}
