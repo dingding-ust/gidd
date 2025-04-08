@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p math                        # 分区名称
-#SBATCH -w hhnode-ib-236               # 指定节点
+
 #SBATCH --gres=gpu:8                   # 申请8块GPU
 #SBATCH --ntasks=8                     # 总进程数
 #SBATCH --mem=64G                      # 64GB内存
@@ -14,6 +14,12 @@ source ~/.bashrc
 module load cuda/11.2
 conda activate gidd_env
 
+
+# NCCL配置（关键修改）
+export NCCL_DEBUG=INFO
+export NCCL_IB_DISABLE=1
+export NCCL_P2P_DISABLE=1
+
 # 2. 设置数据缓存路径
 export HF_DATASETS_CACHE=/scratch/PI/makchen/ddingab/datasets/huggingface/datasets
 export TRANSFORMERS_CACHE=/scratch/PI/makchen/ddingab/datasets/huggingface/transformers
@@ -24,4 +30,4 @@ export PYTHONPATH=$PYTHONPATH:/home/ddingab/gidd
 cd /home/ddingab/gidd
 
 # 4. 运行命令: p_u=0.0
-torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd logging.run_name="'small-gidd+-owt-pu=0.0'" hydra.run.dir="/scratch/PI/makchen/ddingab/gidd/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}"
+torchrun --nnodes 1 --nproc_per_node 4 gidd/train.py --config-name gidd logging.run_name="'small-gidd+-owt-pu=0.0'" hydra.run.dir="/scratch/PI/makchen/ddingab/gidd/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}"
