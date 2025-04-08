@@ -67,11 +67,21 @@ def main(config):
     try:
         local_rank = int(os.environ['LOCAL_RANK'])
         torch.cuda.set_device(local_rank)
-        dist.init_process_group(
-            backend="nccl",
-            timeout=datetime.timedelta(minutes=30),
-            device_id=torch.device("cuda", local_rank),
-        )
+        # 为不同版本的 PyTorch 提供兼容性
+        if int(torch.__version__.split('.')[0]) < 2:
+            # PyTorch 1.x 版本
+            dist.init_process_group(
+                backend="nccl",
+                timeout=datetime.timedelta(minutes=30),
+                # device_id 参数在 PyTorch 1.x 中不支持
+            )
+        else:
+            # PyTorch 2.x 版本
+            dist.init_process_group(
+                backend="nccl",
+                timeout=datetime.timedelta(minutes=30),
+                device_id=torch.device("cuda", local_rank),
+            )
         world_size = dist.get_world_size()
         global_rank = dist.get_rank()  # only a single group, don't have to worry about local vs. global rank
         is_main_process = (global_rank == 0)
