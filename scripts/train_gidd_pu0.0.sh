@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gpu                         # 分区名称 (比如gpu)
+#SBATCH -p math                        # 分区名称 (比如gpu)
 #SBATCH -w hhnode-ib-236               # 指定节点 (你说只有这台GPU较好)
 #SBATCH --gres=gpu:8                   # 申请8块GPU
 #SBATCH --ntasks=8                     # 总进程数 (和GPU数量对应)
