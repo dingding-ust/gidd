@@ -13,6 +13,7 @@ import tqdm
 import wandb
 from omegaconf import OmegaConf, open_dict
 from torch.nn.parallel import DistributedDataParallel as DDP
+import pkg_resources
 
 from gidd.models.dit import DIT
 from gidd.checkpoints import (
@@ -100,6 +101,11 @@ def main(config):
     device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device=} and {dtype=}")
 
+    # 检查PyTorch版本
+    torch_version = pkg_resources.get_distribution("torch").version
+    is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
+    has_compiler = hasattr(torch, 'compiler')
+
     if config.training.resume is None:
         tokenizer = get_tokenizer(config)
 
@@ -154,7 +160,7 @@ def main(config):
 
     trainable_params = sum(p.numel() for p in trainer.parameters() if p.requires_grad)
 
-    if config.training.compile_model:
+    if config.training.compile_model and has_compiler:
         opt_trainer = torch.compile(trainer)
     else:
         opt_trainer = trainer

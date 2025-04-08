@@ -1,9 +1,11 @@
 import json
-
+import os
 import numpy as np
-import hydra
-import tqdm
 import torch
+import tqdm
+import hydra
+import pkg_resources
+from pathlib import Path
 from transformers import AutoModelForCausalLM
 
 from gidd.data import get_dataloaders
@@ -12,6 +14,10 @@ from gidd.loss import get_loss
 from gidd.checkpoints import load_checkpoint
 from gidd.trainer import get_trainer
 
+# 检查PyTorch版本
+torch_version = pkg_resources.get_distribution("torch").version
+is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
+has_compiler = hasattr(torch, 'compiler')
 
 @hydra.main(config_path="../configs", config_name="eval", version_base="1.1")
 def main(args):
@@ -33,7 +39,8 @@ def main(args):
 
     trainer = get_trainer(config, model, tokenizer, noise_schedule, loss_fn, dtype)
     trainer.to(device)
-    trainer = torch.compile(trainer)
+    if has_compiler:
+        trainer = torch.compile(trainer)
     model.eval()
 
     eval_metrics = {}

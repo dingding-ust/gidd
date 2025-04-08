@@ -2,11 +2,17 @@ import pandas as pd
 import hydra
 import tqdm
 import torch
+import pkg_resources
+from pathlib import Path
 
 from gidd.utils import parse_dtype
 from gidd.checkpoints import load_checkpoint
 from gidd.utils import sample_categorical
 
+# 检查PyTorch版本
+torch_version = pkg_resources.get_distribution("torch").version
+is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
+has_compiler = hasattr(torch, 'compiler')
 
 def correction_step(model, tokenizer, z_t, t, temp, tokens_per_step):
     logits = model(z_t, t)
@@ -37,7 +43,8 @@ def main(args):
     config.training.eval_batch_size = args.batch_size
     dtype = parse_dtype(config.training.dtype)
 
-    model = torch.compile(model)
+    if has_compiler:
+        model = torch.compile(model)
 
     samples_path = hydra.utils.to_absolute_path(args.samples_path)
     z_ts = torch.load(samples_path, weights_only=True)

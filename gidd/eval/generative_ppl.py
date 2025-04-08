@@ -7,7 +7,12 @@ import tqdm
 import torch
 import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import pkg_resources
 
+# 检查PyTorch版本
+torch_version = pkg_resources.get_distribution("torch").version
+is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
+has_compiler = hasattr(torch, 'compiler')
 
 @hydra.main(config_path="../configs", config_name="gen_ppl", version_base="1.1")
 def main(args):
@@ -24,7 +29,7 @@ def main(args):
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    if args.torch_compile:
+    if args.torch_compile and has_compiler:
         model = torch.compile(model)
 
     samples_path = hydra.utils.to_absolute_path(args.samples_path)
