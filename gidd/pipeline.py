@@ -13,6 +13,13 @@ torch_version = pkg_resources.get_distribution("torch").version
 is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
 has_compiler = hasattr(torch, 'compiler')
 
+# 创建条件装饰器
+def conditional_compiler_disable(func):
+    if has_compiler:
+        return torch.compiler.disable(func)
+    else:
+        return func
+
 class GiddPipeline(nn.Module):
     @classmethod
     def from_pretrained(cls, model_name_or_path: str, **kwargs):
@@ -35,7 +42,7 @@ class GiddPipeline(nn.Module):
             compile_step = False
         self.sampler = GiddSampler(model, tokenizer, noise_schedule, t_eps=config.t_eps, compile_step=compile_step)
 
-    @torch.compiler.disable
+    @conditional_compiler_disable
     def progress_bar(self, iterable=None, total=None):
         if not hasattr(self, "_progress_bar_config"):
             self._progress_bar_config = {}
