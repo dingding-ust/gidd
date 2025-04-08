@@ -248,6 +248,8 @@ class DDiTBlock(nn.Module):
     self.adaLN_modulation.weight.data.zero_()
     self.adaLN_modulation.bias.data.zero_()
 
+    self.head_dim = dim
+
   def flops(self, seq_len=128):
     per_token_flops = 0
     per_token_flops += 2 * self.dim * 3 * self.dim  # attn_qkv
@@ -299,7 +301,8 @@ class DDiTBlock(nn.Module):
       x = rearrange(x, '(b s) h d -> b s (h d)', b=batch_size)
     else:
       q, k, v = qkv[:, :, 0].transpose(1, 2), qkv[:, :, 1].transpose(1, 2), qkv[:, :, 2].transpose(1, 2)
-      attn_weights = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.head_dim)
+      head_dim = q.size(-1)  # 动态计算head_dim
+      attn_weights = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(head_dim)
       attn_weights = F.softmax(attn_weights, dim=-1)
       x = torch.matmul(attn_weights, v)
       
