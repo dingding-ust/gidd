@@ -111,3 +111,21 @@ The `temp` argument controls the temperature used when resampling tokens from th
 ```bash
 python gidd/eval/self_correction.py path=./outputs/path/to/checkpoint/ samples_path=samples.pt corrected_samples_path=corrected_samples.pt batch_size=16 num_denoising_steps=128 temp=0.1
 ```
+
+## 磁盘空间问题解决方案
+
+如果在运行过程中遇到 `OSError: [Errno 122] Disk quota exceeded` 错误，这表明下载数据集的默认位置磁盘空间不足。有以下解决方案：
+
+1. 设置环境变量指定缓存目录（推荐）：
+```bash
+# 将 /path/to/enough/space 替换为您系统上有足够空间的目录路径
+export HF_DATASETS_CACHE=/path/to/enough/space/huggingface/datasets
+```
+
+2. 在配置文件中直接指定（已在 configs/data/owt.yaml 中支持）：
+```yaml
+# 在 configs/data/owt.yaml 中修改或添加以下配置
+hf_cache_dir: /path/to/enough/space/huggingface/datasets
+```
+
+3. 使用较小的数据集进行测试。

@@ -17,12 +17,21 @@ from torch.utils.data.distributed import DistributedSampler
 def get_dataset(config, num_proc=32):
     test_size = int(config.data.test_size)
     n_proc = min(os.cpu_count(), num_proc)
+    
+    # 检查是否指定了自定义 HF 缓存目录
+    cache_dir = os.environ.get("HF_DATASETS_CACHE", None)
+    if hasattr(config.data, "hf_cache_dir") and config.data.hf_cache_dir:
+        cache_dir = config.data.hf_cache_dir
+        os.makedirs(cache_dir, exist_ok=True)
+        print(f"使用自定义数据集缓存目录: {cache_dir}")
+    
     train_ds = load_dataset(
         config.data.dataset_name,
         config.data.dataset_subset,
         split=f"train[:-{test_size}]",
         trust_remote_code=config.data.trust_remote_code,
         num_proc=n_proc,
+        cache_dir=cache_dir,
     )
     test_ds = load_dataset(
         config.data.dataset_name,
@@ -30,6 +39,7 @@ def get_dataset(config, num_proc=32):
         split=f"train[-{test_size}:]",
         trust_remote_code=config.data.trust_remote_code,
         num_proc=n_proc,
+        cache_dir=cache_dir,
     )
 
     return train_ds, test_ds

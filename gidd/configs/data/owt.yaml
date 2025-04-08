@@ -3,3 +3,6 @@ defaults:
 
 dataset_name: Skylion007/openwebtext
 trust_remote_code: True
+# 指定 HuggingFace 数据集缓存目录，解决磁盘空间不足问题
+# 请设置为您系统上有足够空间的目录路径
+hf_cache_dir: ${oc.env:HF_DATASETS_CACHE,null}
