@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p math
-#SBATCH -w hhnode-ib-236  # 保留原来的节点，确保硬件环境一致
+#SBATCH -w hhnode-ib-236
 #SBATCH --gres=gpu:8
 #SBATCH --ntasks=8
 #SBATCH --mem=64G
@@ -28,16 +28,13 @@ export PYTHONPATH=$PYTHONPATH:/home/ddingab/gidd
 # 设置CUDA内存分配
 export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 
-# 确保wandb不会因连接问题而导致训练中断
-export WANDB_MODE=offline
-
 # 3. 确保切换到项目根目录
 cd /home/ddingab/gidd
 
 # 添加环境变量以获取完整错误信息
 export HYDRA_FULL_ERROR=1
 
-# 使用较小的批次和序列长度
+# 使用较小的批次和序列长度 - 修复参数格式
 torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd \
   logging.wandb_project=GIDD-Experiments \
   logging.run_name=small-gidd-owt-pu0.0-fixed \
@@ -47,7 +44,9 @@ torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd \
   training.gradient_accumulation_steps=8 \
   +data.max_seq_length=2048 \
   +data.truncation=true \
+  +data.preprocessing.do_truncation=true \
+  +data.preprocessing.max_length=2048 \
   training.seed=1 \
   logging.save_freq=5000 \
   training.compile_model=False \
-  hydra.run.dir=/scratch/PI/makchen/ddingab/gidd/outputs/\${now:%Y-%m-%d}/\${now:%H-%M-%S}
+  'hydra.run.dir=/scratch/PI/makchen/ddingab/gidd/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}'
