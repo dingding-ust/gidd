@@ -10,8 +10,14 @@ has_compiler = hasattr(torch, 'compiler')
 # 尝试导入 heavyball
 has_heavyball = False
 try:
-    import heavyball
-    has_heavyball = True
+    if is_torch_2_plus:  # 只在PyTorch 2.0+上尝试导入heavyball
+        import heavyball
+        has_heavyball = True
+    else:
+        warnings.warn(
+            "当前PyTorch版本低于2.0，不会尝试导入heavyball包。"
+            "将使用adam优化器替代。"
+        )
 except ImportError as e:
     if 'torch._dynamo' in str(e):
         warnings.warn(
