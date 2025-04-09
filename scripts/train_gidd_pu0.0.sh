@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p math                        # 分区名称
-
+#SBATCH -w hhnode-ib-236               # 指定节点
 #SBATCH --gres=gpu:8                   # 申请8块GPU
 #SBATCH --ntasks=8                     # 总进程数
 #SBATCH --mem=64G                      # 64GB内存
