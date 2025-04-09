@@ -39,7 +39,7 @@ torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd \
   logging.run_name="'small-gidd+-owt-pu=0.0-reduced'" \
   training.train_batch_size=8 \
   training.eval_batch_size=8 \
-  +training.gradient_accumulation_steps=8 \
+  training.gradient_accumulation_steps=8 \
   data.max_seq_length=512 \
   training.compile_model=False \
   hydra.run.dir="/scratch/PI/makchen/ddingab/gidd/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}"
