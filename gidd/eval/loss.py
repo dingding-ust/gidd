@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import tqdm
 import hydra
-import pkg_resources
+import importlib.metadata
 from pathlib import Path
 from transformers import AutoModelForCausalLM
 
@@ -15,7 +15,7 @@ from gidd.checkpoints import load_checkpoint
 from gidd.trainer import get_trainer
 
 # 检查PyTorch版本
-torch_version = pkg_resources.get_distribution("torch").version
+torch_version = importlib.metadata.version("torch")
 is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
 has_compiler = hasattr(torch, 'compiler')
 

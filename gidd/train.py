@@ -13,7 +13,7 @@ import tqdm
 import wandb
 from omegaconf import OmegaConf, open_dict
 from torch.nn.parallel import DistributedDataParallel as DDP
-import pkg_resources
+import importlib.metadata
 
 from gidd.models.dit import DIT
 from gidd.checkpoints import (
@@ -107,12 +107,17 @@ def main(config):
 
     torch.backends.cuda.enable_flash_sdp(enabled=True)
 
+    # 明确使用float32作为默认数据类型，避免bfloat16导致的cuda错误
+    if config.training.dtype == "bfloat16":
+        print("警告：BFloat16数据类型可能导致CUDA操作错误，将使用float32替代")
+        config.training.dtype = "float32"
+    
     dtype = parse_dtype(config.training.dtype)
     device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device=} and {dtype=}")
 
     # 检查PyTorch版本
-    torch_version = pkg_resources.get_distribution("torch").version
+    torch_version = importlib.metadata.version("torch")
     is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
     has_compiler = hasattr(torch, 'compiler')
 

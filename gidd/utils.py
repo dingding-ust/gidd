@@ -7,10 +7,13 @@ import torch
 def parse_dtype(dtype):
     if dtype == "fp16":
         return torch.float16
-    elif dtype == "fp32":
+    elif dtype == "fp32" or dtype == "float32":
         return torch.float32
-    elif dtype == "bf16":
-        return torch.bfloat16
+    elif dtype == "bf16" or dtype == "bfloat16":
+        # 某些CUDA操作不支持bfloat16，改用float32
+        # 例如 torch.triu 在旧版本PyTorch中不支持bfloat16
+        print("警告: BFloat16可能不被某些CUDA操作支持，使用float32替代")
+        return torch.float32
     else:
         raise ValueError(f"Unknown dtype: {dtype}")
 

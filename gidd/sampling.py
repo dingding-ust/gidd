@@ -4,13 +4,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import tqdm.auto as tqdm
-import pkg_resources
+import importlib.metadata
 
 from gidd.diffusion_process import NoiseSchedule
 from gidd.utils import sample_categorical
 
 # 检查PyTorch版本
-torch_version = pkg_resources.get_distribution("torch").version
+torch_version = importlib.metadata.version("torch")
 is_torch_2_plus = int(torch_version.split('.')[0]) >= 2
 has_compiler = hasattr(torch, 'compiler')
 
