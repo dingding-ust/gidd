@@ -31,16 +31,20 @@ export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 # 3. 确保切换到项目根目录
 cd /home/ddingab/gidd
 
+
+
 # 添加环境变量以获取完整错误信息
 export HYDRA_FULL_ERROR=1
 
 # 使用较小的批次和序列长度
 torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd \
-  logging.run_name=small-gidd-plus-owt-pu0.1-reduced \
+  logging.run_name=small-gidd+-owt-pu=0.1-reduced \
+  logging.wandb_project=GIDD-Experiments \
   model.p_uniform=0.1 \
   training.train_batch_size=8 \
   training.eval_batch_size=8 \
   training.gradient_accumulation_steps=8 \
   +data.max_seq_length=512 \
+  +data.truncation=true \ 
   training.compile_model=False \
   hydra.run.dir=/scratch/PI/makchen/ddingab/gidd/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
