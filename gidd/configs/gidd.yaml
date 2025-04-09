@@ -3,6 +3,7 @@ defaults:
   - data: owt
   - model: small
   - optimizer: adam
+  - training
   - _self_
 
 model:
