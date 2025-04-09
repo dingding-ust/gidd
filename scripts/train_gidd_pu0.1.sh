@@ -36,7 +36,8 @@ cd /home/ddingab/gidd
 
 # 使用较小的批次和序列长度
 torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd \
-  logging.run_name="'small-gidd+-owt-pu=0.0-reduced'" \
+  logging.run_name="'small-gidd+-owt-pu=0.1-reduced'" \  # 修改为0.1
+  model.p_uniform=0.1 \  # 添加此行设置p_uniform=0.1
   training.train_batch_size=8 \
   training.eval_batch_size=8 \
   training.gradient_accumulation_steps=8 \
