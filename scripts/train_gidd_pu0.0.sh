@@ -41,7 +41,7 @@ torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name gidd \
   model.p_uniform=0.0 \
   training.train_batch_size=8 \
   training.eval_batch_size=8 \
-  +training.gradient_accumulation_steps=8 \
+  training.gradient_accumulation_steps=8 \
   +data.max_seq_length=2048 \
   +data.truncation=true \
   +data.preprocessing.do_truncation=true \
