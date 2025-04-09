@@ -26,4 +26,4 @@ torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name ar \
   logging.wandb_project=GIDD-Experiments \
   logging.run_name=small-ar-owt-minimal \
   ++training.compile_model=False \
-  +model.attn_implementation=eager
+  ++model.attn_implementation=eager
