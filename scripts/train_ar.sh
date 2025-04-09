@@ -4,9 +4,9 @@
 #SBATCH --ntasks=8
 #SBATCH --mem=64G
 #SBATCH -t 7-00:00:00
-#SBATCH -J ar-train-no-sdpa
-#SBATCH -o /scratch/PI/makchen/ddingab/gidd/logs/ar-train-no-sdpa_%j.out
-#SBATCH -e /scratch/PI/makchen/ddingab/gidd/logs/ar-train-no-sdpa_%j.err
+#SBATCH -J ar-train
+#SBATCH -o /scratch/PI/makchen/ddingab/gidd/logs/ar-train_%j.out
+#SBATCH -e /scratch/PI/makchen/ddingab/gidd/logs/ar-train_%j.err
 
 # 加载环境
 source ~/.bashrc
@@ -36,17 +36,17 @@ export HYDRA_FULL_ERROR=1
 export TRANSFORMERS_NO_ADVISORY_WARNINGS=1
 export TRANSFORMERS_ATTN_IMPLEMENTATION="eager"
 
-# AR模型命令
+# AR模型命令 - 修改了参数格式
 torchrun --nnodes 1 --nproc_per_node 8 gidd/train.py --config-name ar \
   logging.wandb_project=GIDD-Experiments \
   logging.run_name=small-ar-owt \
-  +training.train_batch_size=8 \
-  +training.eval_batch_size=8 \
+  training.train_batch_size=8 \
+  training.eval_batch_size=8 \
   +training.gradient_accumulation_steps=8 \
   +data.max_seq_length=2048 \
   +data.truncation=true \
   +training.seed=1 \
   +model.attn_implementation="eager" \
-  +logging.save_freq=5000 \
-  +training.compile_model=False \
+  logging.save_freq=5000 \
+  training.compile_model=False \
   'hydra.run.dir=/scratch/PI/makchen/ddingab/gidd/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}'
